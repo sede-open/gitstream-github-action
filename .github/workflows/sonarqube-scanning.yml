@@ -1,24 +1,37 @@
 on:
-  # Trigger analysis when pushing in master or pull requests, and when creating
-  # a pull request. 
-  push:
-    branches: [ "shloka-vidi-patch-1" ]
-  pull_request:
-      types: [opened, synchronize, reopened]
+  # Trigger analysis when creating a pull request.
 
-name: SonarQube Scan
+  pull_request:
+      branches: [QA4C, Staging, main, shloka-vidi-patch-1]
+      types: [opened, synchronize, reopened]
+      
+concurrency:
+  group: SonarQube
+  
+name: Code Analysis
 jobs:
   sonarqube:
-    name: SonarQube Trigger
     runs-on: ubuntu-latest
     steps:
-    - name: Checking out
-      uses: actions/checkout@master
-      with:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v1.0.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: https://sesvc.shell.com
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=com.shell.SF-Chem
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: SonarQube Quality Gate check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time
+        timeout-minutes: 30
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
+          SONAR_HOST_URL: https://sesvc.shell.com
