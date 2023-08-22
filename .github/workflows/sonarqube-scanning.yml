@@ -1,6 +1,7 @@
 on:
-  # Trigger analysis when creating a pull request.
-
+  # Trigger analysis when creating a pull request.  
+  push:
+    branches: [ "shloka-vidi-patch-1" ]
   pull_request:
       branches: [QA4C, Staging, main, shloka-vidi-patch-1]
       types: [opened, synchronize, reopened]
